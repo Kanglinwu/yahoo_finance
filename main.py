@@ -113,7 +113,23 @@ print('Start - Fair Value of Equity =B17/B18')
 # print('D10=D12*$C$4')
 # print('D12=D11*$C$3, D12=Page2NetIncome')
 
-# period_year['Page2NetIncome'] = period_year['revenueEstimate_low'] * Net_Profit_Margins
+## D12=D11*$C$3
+temp = period_year.loc[:,('revenueEstimate_low',)] * Net_Profit_Margins
 
-# print(period_year)
+period_year.insert(4, 'Page2NetIncome', temp)
+
+
+new_row = pd.Series(data={'endDate':None, 'period':None, 'revenueEstimate_low':None, 'revenueEstimate_growth_rate':None}, name='x')
+
+df_revenueEstimate_low.append(new_row, ignore_index=True)
+
+print(df_revenueEstimate_low)
+
+
+# newpd = pd.DataFrame({
+#     'endDate': pd.Categorical(list_endDate),
+#     'period': pd.Categorical(list_period),
+#     'revenueEstimate_low': pd.Series(list_revenueEstimate_low, dtype='float64'),
+#     'revenueEstimate_growth_rate': pd.Series(list_revenueEstimate_growth_rate, dtype='float64')
+# })
 
