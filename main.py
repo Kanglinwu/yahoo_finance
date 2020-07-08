@@ -101,10 +101,10 @@ df_revenueEstimate_low = pd.DataFrame({
     'revenueEstimate_growth_rate': pd.Series(list_revenueEstimate_growth_rate, dtype='float64', index=list_period)
 }, index=list_period)
 
-cus_pd = pd.DataFrame(df_revenueEstimate_low, index=['0y', '+1y', '+2y', '+3y'])
+cus_df = pd.DataFrame(df_revenueEstimate_low, index=['0y', '+1y', '+2y', '+3y'])
 
 print('Analysis: ')
-print(cus_pd)
+# print(cus_pd)
 # print(cus_pd.index)
 ## Index(['0y', '+1y', '+2y', '+3y'], dtype='object')
 # print(cus_pd.columns)
@@ -112,31 +112,49 @@ print(cus_pd)
 
 ## pd.loc[] -- get dataframe by row (index)
 ## pd.loc[][] -- the second one [] is get the first[] (dataframe) by columns
-print('Page 2 - C5 Sales Growth (year/est): ', (cus_pd.loc['0y']['revenueEstimate_growth_rate'] + cus_pd.loc['+1y']['revenueEstimate_growth_rate'])/2)
+Page2_C5_Sales_Growth = (cus_df.loc['0y']['revenueEstimate_growth_rate'] + cus_df.loc['+1y']['revenueEstimate_growth_rate'])/2
+print('Page 2 - C5 Sales Growth (year/est): ', Page2_C5_Sales_Growth)
 
 ## target ## 目前要把endDate改成我要的 2020-09-30, 2021-09-30 ... etc
 # 產生pd.Series
-tempkeydate = cus_pd.iloc[0][0]
-print(tempkeydate)
-
+# get the first datetime from dataframe-Analysis
+tempkeydate = cus_df.iloc[0][0]
+# dict for datetime - interval is 1 year
 tempdict = {'endDate': pd.date_range(tempkeydate, periods=4, freq='12M')}
+# new df for temp, it will replace the cur_pd
 df_temp = pd.DataFrame(tempdict, index=['0y', '+1y', '+2y', '+3y'])
+# replace it
+cus_df = cus_df.assign(endDate=df_temp['endDate'])
 
-print(tempdict)
+### 加入F11 and G11 (revenue)
+## F11 = E11*(1+ C5)
+# call E11
+Page2_E11 = cus_df.loc['+1y']['revenueEstimate_low']
+# call F11
+Page2_F11 = Page2_E11 * ( 1+ Page2_C5_Sales_Growth)
+# call G11
+Page2_G11 = Page2_F11 * ( 1+ Page2_C5_Sales_Growth)
+
+# replace cus_df.iloc[3][3] and [4][4]
+cus_df.loc['+2y', 'revenueEstimate_low'] = Page2_F11
+cus_df.loc['+3y', 'revenueEstimate_low'] = Page2_G11
+
+### Page2 _ D12, E12, F12, G12 - Net Income
+## D12=D11*$C$3
+temp_series = cus_df.loc[:,('revenueEstimate_low',)] * Net_Profit_Margins
+cus_df.insert(3, 'Page2NetIncome', temp_series)
+print(cus_df)
+'''
+       endDate  revenueEstimate_low  revenueEstimate_growth_rate  Page2NetIncome
+0y  2020-09-30         2.546180e+11                        0.014    5.469928e+10
++1y 2021-09-30         2.616590e+11                        0.121    5.621189e+10
++2y 2022-09-30         2.793210e+11                          NaN    6.000619e+10
++3y 2023-09-30         2.981752e+11                          NaN    6.405661e+10
+'''
+
+### D10 = D12 * C4 (Page2FreeCashFlow = Net Income * FCF_to_Profit_Margins)
 
 
-
-
-
-# ## temp
-# period_year = df_revenueEstimate_low[df_revenueEstimate_low[['0y','+1y']]]
-
-# print('Analysis: ')
-# # print('Page2 - Analysis - Revenue Estimate - Low Estimate (unit: B) - (D11, E11):')
-# print(df_revenueEstimate_low)
-
-# print('Page 2 - C5 Sales Growth (year/est)')
-# print(period_year['revenueEstimate_growth_rate'].mean())
 
 # ## Analysis ###
 
